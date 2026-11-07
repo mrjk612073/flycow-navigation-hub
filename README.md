@@ -31,7 +31,7 @@ docker compose up -d --build
 
 ### 飞牛 fnOS fpk
 
-应用中心 → 手动安装，选 `导航页-1.0.2.fpk` 即可。
+应用中心 → 手动安装，选 `导航页-1.0.3.fpk` 即可。
 
 安装脚本不会在 NAS 上编译，只从镜像仓库拉现成镜像（`ghcr.io/mrjk612073/flycow-navigation-hub:1.0.2`），
 所以装得很快，也不消耗 NAS 的内存和 CPU。数据保存在 Docker 命名卷 `compass-nav-data`，卸载不会删除。
