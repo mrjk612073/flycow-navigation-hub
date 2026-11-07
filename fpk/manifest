@@ -1,7 +1,7 @@
 appname = compass-nav
-version = 1.0.1
-display_name = 导航页
-desc = 桌面级导航起始页，支持小组件自由拖拽与拉伸、在线壁纸自动轮换、天气显示、内外网地址自动切换、多用户独立布局。<br>首次启动会从 GHCR 拉取预构建镜像（约 100MB），无需在 NAS 上编译。<br>默认访问端口 3002，数据保存在 Docker 命名卷 compass-nav-data 中，卸载应用不会自动删除数据。
+version                    = 1.0.2
+display_name = 瀵艰埅椤?
+desc = 妗岄潰绾у鑸捣濮嬮〉锛屾敮鎸佸皬缁勪欢鑷敱鎷栨嫿涓庢媺浼搞€佸湪绾垮绾歌嚜鍔ㄨ疆鎹€佸ぉ姘旀樉绀恒€佸唴澶栫綉鍦板潃鑷姩鍒囨崲銆佸鐢ㄦ埛鐙珛甯冨眬銆?br>棣栨鍚姩浼氫粠 GHCR 鎷夊彇棰勬瀯寤洪暅鍍忥紙绾?100MB锛夛紝鏃犻渶鍦?NAS 涓婄紪璇戙€?br>榛樿璁块棶绔彛 3002锛屾暟鎹繚瀛樺湪 Docker 鍛藉悕鍗?compass-nav-data 涓紝鍗歌浇搴旂敤涓嶄細鑷姩鍒犻櫎鏁版嵁銆?
 platform = all
 source = thirdparty
 os_min_version = 1.1.1000

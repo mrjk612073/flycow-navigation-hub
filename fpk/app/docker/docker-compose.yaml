@@ -1,6 +1,6 @@
 services:
   compass-nav:
-    image: ghcr.io/mrjk612073/flycow-navigation-hub:1.0.1
+    image: ghcr.io/mrjk612073/flycow-navigation-hub:1.0.2
     container_name: compass-nav
     ports:
       - "3002:3002"
