@@ -42,6 +42,9 @@ RUN npm rebuild better-sqlite3 --no-audit --no-fund || true
 # 拷贝源码（.dockerignore 已排除 node_modules / dist / data / .env）
 COPY . .
 
+# 前端包体较大（ECharts / Tailwind 等），默认堆内存容易 OOM，显式放大
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
 # 前后端分开两条 RUN，失败时能一眼看出是哪一步挂了
 RUN npm run build:server
 RUN npm run build:client

@@ -1,9 +1,6 @@
 services:
   compass-nav:
-    build:
-      context: ./src
-      dockerfile: Dockerfile
-    image: compass-nav:1.0.0
+    image: ghcr.io/mrjk612073/flycow-navigation-hub:1.0.0
     container_name: compass-nav
     ports:
       - "3002:3002"
