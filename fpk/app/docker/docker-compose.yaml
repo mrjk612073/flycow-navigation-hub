@@ -1,6 +1,6 @@
 services:
   compass-nav:
-    image: ghcr.io/mrjk612073/flycow-navigation-hub:1.0.0
+    image: ghcr.io/mrjk612073/flycow-navigation-hub:1.0.1
     container_name: compass-nav
     ports:
       - "3002:3002"
@@ -10,6 +10,7 @@ services:
       SERVER_PORT: "3002"
       DATA_DIR: "/app/data"
       JWT_SECRET: "please-change-this-to-a-long-random-string"
+      NODE_OPTIONS: "--max-old-space-size=4096"
     volumes:
       - "compass-nav-data:/app/data"
     restart: unless-stopped
