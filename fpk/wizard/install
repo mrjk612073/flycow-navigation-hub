@@ -4,7 +4,7 @@
     "items": [
       {
         "type": "tips",
-        "helpText": "罗盘导航是一个桌面级导航起始页，安装后通过 <strong>http://飞牛IP:3002</strong> 访问。"
+        "helpText": "导航页是一个桌面级导航起始页，安装后通过 <strong>http://飞牛IP:3002</strong> 访问。"
       },
       {
         "type": "tips",

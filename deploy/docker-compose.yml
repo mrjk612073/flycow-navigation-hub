@@ -1,30 +1,27 @@
 services:
   compass-nav:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: compass-nav:1.0.0
+      context: ..
+      dockerfile: deploy/Dockerfile
     container_name: compass-nav
+    restart: unless-stopped
     ports:
       - "3002:3002"
     environment:
-      TZ: Asia/Shanghai
-      SERVER_HOST: "0.0.0.0"
-      SERVER_PORT: "3002"
-      DATA_DIR: "/app/data"
-      # 生产环境建议改掉这两个值
-      JWT_SECRET: "please-change-this-to-a-long-random-string"
-      ADMIN_PASSWORD: "admin123"
+      - PORT=3002
+      - SERVER_PORT=3002
+      - SERVER_HOST=0.0.0.0
+      - DATA_DIR=/app/data
+      - NODE_ENV=production
+      # 如需自定义 JWT 密钥，取消下行注释并改为随机字符串（至少32位）
+      # - JWT_SECRET=change-me-to-a-very-long-random-secret-key
     volumes:
-      - ./data:/app/data
-    restart: unless-stopped
+      # 数据持久化：数据库文件存在项目根 data/ 目录下
+      # 从 deploy/ 目录启动 compose 时，../data 对应项目根的 data/
+      - ../data:/app/data
     healthcheck:
-      test:
-        - CMD
-        - node
-        - -e
-        - "require('http').get('http://127.0.0.1:3002/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+      test: ["CMD", "curl", "-fsS", "http://localhost:3002/"]
       interval: 30s
       timeout: 5s
-      start_period: 25s
       retries: 3
+      start_period: 15s

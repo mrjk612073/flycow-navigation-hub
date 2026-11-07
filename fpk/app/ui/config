@@ -1,7 +1,7 @@
 {
   ".url": {
     "compass-nav": {
-      "title": "罗盘导航",
+      "title": "导航页",
       "icon": "images/icon_256.png",
       "type": "url",
       "protocol": "http",
