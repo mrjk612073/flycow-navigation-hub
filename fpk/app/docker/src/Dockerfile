@@ -5,71 +5,61 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-# 安装构建依赖（better-sqlite3 native 编译需要 python3/make/g++；git 用于部分 npm 包）
+# 构建依赖：
+# - python3 / make / g++：better-sqlite3 原生模块编译
+# - git：部分 npm 包从 git 拉取
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制依赖清单
+# 依赖清单单独 COPY，命中缓存
 COPY package.json package-lock.json* ./
 
-# 安装依赖（跳过 postinstall 避免非交互阻塞）
+# 先按 lock 安装；--ignore-scripts 避免 postinstall 阻塞，原生模块随后单独 rebuild
 RUN npm ci --ignore-scripts 2>/dev/null || npm install --ignore-scripts
 RUN npm rebuild better-sqlite3 2>/dev/null || true
 
-# 复制源码
+# 拷贝源码（.dockerignore 已排除 node_modules / dist / data / .env）
 COPY . .
 
-# 清理可能从构建上下文带入的依赖和构建产物，确保干净构建
-RUN rm -rf node_modules dist
-
-# 分步构建 server + client（不走 build.sh 整体脚本避免交互问题）
+# 构建前后端
 RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build:server \
     && NODE_OPTIONS="--max-old-space-size=4096" npm run build:client
+
+# 剔除开发依赖，保留已编译好的生产依赖（含 better-sqlite3 二进制）
+RUN npm prune --omit=dev
 
 # ============================================================
 #  Stage 2: Production Runtime
 # ============================================================
 FROM node:22-slim AS runtime
 
-# 运行时依赖：curl（健康检查）、tini（信号处理）、ca-certificates（HTTPS 请求）
+# 运行时依赖：curl（健康检查）、tini（PID 1 信号处理）、ca-certificates（HTTPS 请求）
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl tini ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# 复制构建产物
+# 直接搬构建阶段的产物和依赖，运行时不再装包、不再编译
 COPY --from=builder /app/dist ./dist
-# 复制 package.json（运行时依赖重新安装用）
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-# 复制 package-lock.json 以加速安装（如果存在）
-COPY --from=builder /app/package-lock.json* ./
-
-# 安装生产依赖（只装 dependencies，不含 devDependencies）
-RUN npm install --omit=dev --ignore-scripts 2>/dev/null \
-    || npm install --production --ignore-scripts 2>/dev/null \
-    || true
-RUN npm rebuild better-sqlite3 2>/dev/null || true
-
-# 清理不需要的缓存
-RUN npm cache clean --force 2>/dev/null || true
 
 # 环境变量
 # - SERVER_HOST=0.0.0.0：容器内必须监听所有网卡
 # - SERVER_PORT=3002：后端服务端口
 # - PORT=3002：端口变量别名
-# - DATA_DIR=/app/data：数据目录（数据库文件）
+# - DATA_DIR=/app/data：数据目录（数据库文件与上传壁纸）
 ENV DATA_DIR=/app/data \
     SERVER_HOST=0.0.0.0 \
     SERVER_PORT=3002 \
     PORT=3002 \
     NODE_ENV=production
 
-# 创建数据目录并授权 node 用户
-RUN mkdir -p /app/data && chown -R node:node /app/data
+# 创建数据目录并授权 node 用户（命名卷首次挂载会继承这里的属主）
+RUN mkdir -p /app/data && chown -R node:node /app
 
-# 健康检查
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD curl -fsS "http://localhost:3002/" > /dev/null || exit 1
 
@@ -80,7 +70,7 @@ USER node
 
 VOLUME ["/app/data"]
 
-# 启动：从项目根运行 dist/server/main.js（与开发模式 cwd 约定一致）
+# 启动：从项目根运行 dist/server/main.js
 # views 路径：process.cwd() + 'dist/client' = /app/dist/client
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "dist/server/main.js"]
