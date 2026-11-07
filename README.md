@@ -104,3 +104,39 @@ Failed to load native binding
 Dockerfile 里已经避开了这个坑：正常执行 `npm ci`，另外单独删除项目自带的
 `postinstall`（它调用生成器的 `fullstack-cli`，容器里没有），
 并把前后端构建拆成两条 `RUN`，失败时能直接看出是哪一步挂的。
+
+## 用 GitHub Actions 出镜像（推荐）
+
+不想在 NAS 上现场编译，就让 GitHub 帮你构建镜像，NAS 只负责拉。
+
+1. 把仓库推到 GitHub，仓库名建议与这里一致（`flycow-navigation-hub`）：
+
+```bash
+git remote add github https://github.com/<你的用户名>/flycow-navigation-hub.git
+git push github master
+```
+
+2. 打一个 tag 触发构建（或在 Actions 页面手动 Run workflow）：
+
+```bash
+git tag v1.0.0
+git push github v1.0.0
+```
+
+3. 构建完成后镜像地址是：
+
+```
+ghcr.io/<你的用户名>/flycow-navigation-hub:1.0.0
+ghcr.io/<你的用户名>/flycow-navigation-hub:latest
+```
+
+4. **把包设为公开**，否则 NAS 匿名拉不下来：
+   GitHub → 右上角头像 → `Packages` → 点进这个包 → `Package settings` → `Change visibility` → `Public`
+
+镜像出好后，fpk 里的 `app/docker/docker-compose.yaml` 把 `build:` 换成：
+
+```yaml
+image: ghcr.io/<你的用户名>/flycow-navigation-hub:1.0.0
+```
+
+安装时就变成纯拉镜像，一两分钟装完，不再装依赖、不再编译。
