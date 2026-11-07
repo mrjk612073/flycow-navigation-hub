@@ -1,0 +1,42 @@
+#!/bin/bash
+# Compass 导航 - 应用状态检查
+# Docker 应用的启停由飞牛应用中心执行 docker compose 完成，
+# 本脚本只负责回答「应用是否在运行」。
+
+COMPOSE_FILE="${TRIM_APPDEST}/docker/docker-compose.yaml"
+CONTAINER_NAME="compass-nav"
+
+if [ -f "$COMPOSE_FILE" ]; then
+    PARSED=$(grep -E '^[[:space:]]*container_name:' "$COMPOSE_FILE" | head -n 1 | awk -F ':' '{print $2}' | xargs)
+    if [ -n "$PARSED" ]; then
+        CONTAINER_NAME="$PARSED"
+    fi
+fi
+
+is_running() {
+    if ! command -v docker >/dev/null 2>&1; then
+        return 1
+    fi
+    docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null | grep -q 'true'
+}
+
+case "$1" in
+    start)
+        # 由应用中心执行 compose 启动
+        exit 0
+        ;;
+    stop)
+        # 由应用中心执行 compose 停止
+        exit 0
+        ;;
+    status)
+        if is_running; then
+            exit 0
+        else
+            exit 3
+        fi
+        ;;
+    *)
+        exit 1
+        ;;
+esac

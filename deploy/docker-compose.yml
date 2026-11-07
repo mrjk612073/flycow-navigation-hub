@@ -1,0 +1,30 @@
+services:
+  compass-nav:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: compass-nav:1.0.0
+    container_name: compass-nav
+    ports:
+      - "3002:3002"
+    environment:
+      TZ: Asia/Shanghai
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "3002"
+      DATA_DIR: "/app/data"
+      # 生产环境建议改掉这两个值
+      JWT_SECRET: "please-change-this-to-a-long-random-string"
+      ADMIN_PASSWORD: "admin123"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3002/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 25s
+      retries: 3

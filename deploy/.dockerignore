@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+.git
+.gitignore
+data
+*.log
+.DS_Store
+.DS_Store?
+deploy

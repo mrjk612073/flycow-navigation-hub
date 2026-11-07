@@ -1,0 +1,34 @@
+[
+  {
+    "stepTitle": "安装前说明",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "罗盘导航是一个桌面级导航起始页，安装后通过 <strong>http://飞牛IP:3002</strong> 访问。"
+      },
+      {
+        "type": "tips",
+        "helpText": "首次启动会在本机构建容器镜像，需要下载 Node 基础镜像与依赖，网速一般时约 3-8 分钟，请耐心等待，不要中途关闭应用中心。"
+      },
+      {
+        "type": "tips",
+        "helpText": "所有数据（账号、卡片布局、壁纸）保存在 Docker 命名卷 <strong>compass-nav-data</strong> 中，卸载应用不会自动删除，重装后仍可恢复。"
+      },
+      {
+        "type": "tips",
+        "helpText": "如需外网访问，请在飞牛设置中配置反向代理或域名解析，并注意为公网访问开启 HTTPS。"
+      },
+      {
+        "type": "switch",
+        "field": "wizard_risk_acknowledged",
+        "label": "我已阅读并理解上述说明",
+        "rules": [
+          {
+            "required": true,
+            "message": "请先确认已阅读并理解说明"
+          }
+        ]
+      }
+    ]
+  }
+]

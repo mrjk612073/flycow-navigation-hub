@@ -1,0 +1,14 @@
+appname = compass-nav
+version = 1.0.0
+display_name = 罗盘导航
+desc = 桌面级导航起始页，支持小组件自由拖拽与拉伸、在线壁纸自动轮换、天气显示、内外网地址自动切换、多用户独立布局。<br>首次启动会在容器内构建镜像，耗时约 3-8 分钟，请耐心等待。<br>默认访问端口 3002，数据保存在 Docker 命名卷 compass-nav-data 中，卸载应用不会自动删除数据。
+platform = all
+source = thirdparty
+os_min_version = 1.1.1000
+maintainer = compass
+maintainer_url = https://github.com/
+distributor = compass
+distributor_url = https://github.com/
+service_port = 3002
+desktop_uidir = ui
+disable_authorization_path = true

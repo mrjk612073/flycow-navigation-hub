@@ -1,0 +1,12 @@
+{
+  ".url": {
+    "compass-nav": {
+      "title": "罗盘导航",
+      "icon": "images/icon_256.png",
+      "type": "url",
+      "protocol": "http",
+      "port": "3002",
+      "url": "/"
+    }
+  }
+}

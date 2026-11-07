@@ -1,0 +1,22 @@
+services:
+  compass-nav:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    image: compass-nav:1.0.0
+    container_name: compass-nav
+    ports:
+      - "3002:3002"
+    environment:
+      TZ: "Asia/Shanghai"
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "3002"
+      DATA_DIR: "/app/data"
+      JWT_SECRET: "please-change-this-to-a-long-random-string"
+    volumes:
+      - "compass-nav-data:/app/data"
+    restart: unless-stopped
+
+volumes:
+  compass-nav-data:
+    name: compass-nav-data
