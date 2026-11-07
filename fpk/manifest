@@ -12,3 +12,4 @@ distributor_url = https://github.com/
 service_port = 3002
 desktop_uidir = ui
 disable_authorization_path = true
+desktop_applaunchname = compass-nav.Application
