@@ -12,6 +12,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# 可选：指定 npm 源，国内构建可用 --build-arg NPM_REGISTRY=https://registry.npmmirror.com
+ARG NPM_REGISTRY=
+RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
+
 # 依赖清单单独 COPY，命中缓存
 COPY package.json package-lock.json* ./
 
