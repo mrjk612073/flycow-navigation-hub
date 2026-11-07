@@ -69,9 +69,10 @@ pnpm-lock.yaml
 .env.*
 !.env.example
 
-# 运行时数据（数据库、上传的壁纸）
-data/
-uploads/
+# 运行时数据（数据库、上传的壁纸）——只忽略仓库根目录的 data/，
+# 不能写 data/ 否则会误伤 client/src/data/ 这类源码目录
+/data/
+/uploads/
 *.db
 *.db-wal
 *.db-shm
