@@ -1,7 +1,16 @@
 # ============================================================
 #  Stage 1: Build
 # ============================================================
-FROM node:22-slim AS builder
+# 基础镜像默认走国内可匿名拉取的镜像仓库（docker.io 在部分网络环境不可达）
+# 如需换源：docker build --build-arg NODE_IMAGE=node:22-slim
+ARG NODE_IMAGE=docker.m.daocloud.io/library/node:22-slim
+# npm 源，默认国内镜像；纯海外环境可传 --build-arg NPM_REGISTRY=
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
+FROM ${NODE_IMAGE} AS builder
+
+ARG NODE_IMAGE
+ARG NPM_REGISTRY
 
 WORKDIR /app
 
@@ -12,8 +21,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 可选：指定 npm 源，国内构建可用 --build-arg NPM_REGISTRY=https://registry.npmmirror.com
-ARG NPM_REGISTRY=
 RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
 
 # 依赖清单单独 COPY，命中缓存
@@ -36,7 +43,9 @@ RUN npm prune --omit=dev
 # ============================================================
 #  Stage 2: Production Runtime
 # ============================================================
-FROM node:22-slim AS runtime
+FROM ${NODE_IMAGE} AS runtime
+
+ARG NODE_IMAGE
 
 # 运行时依赖：curl（健康检查）、tini（PID 1 信号处理）、ca-certificates（HTTPS 请求）
 RUN apt-get update \
@@ -75,6 +84,5 @@ USER node
 VOLUME ["/app/data"]
 
 # 启动：从项目根运行 dist/server/main.js
-# views 路径：process.cwd() + 'dist/client' = /app/dist/client
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "dist/server/main.js"]

@@ -70,3 +70,23 @@ bash build-fpk.sh      # 需要先安装 fnpack，且已把源码放在仓库根
 ## License
 
 MIT
+
+## 镜像源与国内网络
+
+基础镜像与 npm 源都做成了构建参数，默认值已经适配国内网络：
+
+- `NODE_IMAGE=docker.m.daocloud.io/library/node:22-slim`
+- `NPM_REGISTRY=https://registry.npmmirror.com`
+
+海外环境或想换别的源，直接覆盖即可：
+
+```bash
+docker build -f deploy/Dockerfile \
+  --build-arg NODE_IMAGE=node:22-slim \
+  --build-arg NPM_REGISTRY= \
+  -t compass-nav:1.0.0 .
+```
+
+> 已知问题：飞牛自带的 `docker.fnnas.com` 对 `node:22-slim` 的 HEAD 请求返回**不带认证挑战的 401**，
+> buildkit 无法取到 token，报 `unexpected status from HEAD request ... 401 Unauthorized`。
+> 因此默认不走该源；如需走飞牛源，请在飞牛 Docker 设置里先配置可用的加速器。
