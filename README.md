@@ -31,12 +31,17 @@ docker compose up -d --build
 
 ### 飞牛 fnOS fpk
 
+应用中心 → 手动安装，选 `导航页-1.0.0.fpk` 即可。
+
+安装脚本不会在 NAS 上编译，只从镜像仓库拉现成镜像（`ghcr.io/mrjk612073/flycow-navigation-hub:1.0.0`），
+所以装得很快，也不消耗 NAS 的内存和 CPU。数据保存在 Docker 命名卷 `compass-nav-data`，卸载不会删除。
+
+想从源码自己打包：
+
 ```bash
 cd fpk
 bash build-fpk.sh      # 需要先安装 fnpack，且已把源码放在仓库根目录
 ```
-
-产物为 `compass-nav-1.0.0.fpk`，在应用中心手动安装即可。数据保存在 Docker 命名卷 `compass-nav-data`。
 
 详细步骤、端口说明、备份迁移、反向代理与 HTTPS 配置见仓库根目录的部署文档。
 
@@ -109,34 +114,15 @@ Dockerfile 里已经避开了这个坑：正常执行 `npm ci`，另外单独删
 
 不想在 NAS 上现场编译，就让 GitHub 帮你构建镜像，NAS 只负责拉。
 
-1. 把仓库推到 GitHub，仓库名建议与这里一致（`flycow-navigation-hub`）：
-
-```bash
-git remote add github https://github.com/<你的用户名>/flycow-navigation-hub.git
-git push github master
-```
-
-2. 打一个 tag 触发构建（或在 Actions 页面手动 Run workflow）：
-
-```bash
-git tag v1.0.0
-git push github v1.0.0
-```
-
-3. 构建完成后镜像地址是：
+**本项目当前已发布、可匿名拉取的镜像：**
 
 ```
-ghcr.io/<你的用户名>/flycow-navigation-hub:1.0.0
-ghcr.io/<你的用户名>/flycow-navigation-hub:latest
+ghcr.io/mrjk612073/flycow-navigation-hub:1.0.0
+ghcr.io/mrjk612073/flycow-navigation-hub:latest
 ```
 
-4. **把包设为公开**，否则 NAS 匿名拉不下来：
-   GitHub → 右上角头像 → `Packages` → 点进这个包 → `Package settings` → `Change visibility` → `Public`
+工作流在 `.github/workflows/docker-publish.yml`：推 `v*` tag（或手动 dispatch）就自动构建 linux/amd64
+镜像并推送到 GHCR。自己 fork 后改成自己的仓库名即可。
 
-镜像出好后，fpk 里的 `app/docker/docker-compose.yaml` 把 `build:` 换成：
-
-```yaml
-image: ghcr.io/<你的用户名>/flycow-navigation-hub:1.0.0
-```
-
-安装时就变成纯拉镜像，一两分钟装完，不再装依赖、不再编译。
+发布的镜像包默认跟着公开仓库一起公开；如果你的包是私有的，需要在
+GitHub → 头像 → `Packages` → 该包 → `Package settings` → `Change visibility` → `Public`，否则 NAS 拉不下来。
