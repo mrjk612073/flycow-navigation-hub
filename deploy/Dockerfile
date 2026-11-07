@@ -15,7 +15,7 @@ ARG NPM_REGISTRY
 WORKDIR /app
 
 # 构建依赖：
-# - python3 / make / g++：better-sqlite3 原生模块编译
+# - python3 / make / g++：better-sqlite3 回退到源码编译时需要
 # - git：部分 npm 包从 git 拉取
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates \
@@ -26,19 +26,28 @@ RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
 # 依赖清单单独 COPY，命中缓存
 COPY package.json package-lock.json* ./
 
-# 先按 lock 安装；--ignore-scripts 避免 postinstall 阻塞，原生模块随后单独 rebuild
-RUN npm ci --ignore-scripts 2>/dev/null || npm install --ignore-scripts
-RUN npm rebuild better-sqlite3 2>/dev/null || true
+# 去掉项目自带的 postinstall/prepare：
+# postinstall 调用 fullstack-cli（生成器带的 CLI），容器里没有也不该跑
+RUN npm pkg delete scripts.postinstall scripts.prepare || true
+
+# 注意：这里**不能**加 --ignore-scripts。
+# --ignore-scripts 会让 @swc/core、esbuild 这类包跳过安装脚本，
+# 平台二进制（@swc/core-linux-x64-gnu 等）装不上，
+# 构建时直接报 "Failed to load native binding"。
+RUN npm ci --no-audit --no-fund
+
+# better-sqlite3 兜底：预编译包拉不到时在这里按源码编译
+RUN npm rebuild better-sqlite3 --no-audit --no-fund || true
 
 # 拷贝源码（.dockerignore 已排除 node_modules / dist / data / .env）
 COPY . .
 
-# 构建前后端
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build:server \
-    && NODE_OPTIONS="--max-old-space-size=4096" npm run build:client
+# 前后端分开两条 RUN，失败时能一眼看出是哪一步挂了
+RUN npm run build:server
+RUN npm run build:client
 
-# 剔除开发依赖，保留已编译好的生产依赖（含 better-sqlite3 二进制）
-RUN npm prune --omit=dev
+# 剔除开发依赖，保留编译好的生产依赖
+RUN npm prune --omit=dev --no-audit --no-fund
 
 # ============================================================
 #  Stage 2: Production Runtime

@@ -90,3 +90,17 @@ docker build -f deploy/Dockerfile \
 > 已知问题：飞牛自带的 `docker.fnnas.com` 对 `node:22-slim` 的 HEAD 请求返回**不带认证挑战的 401**，
 > buildkit 无法取到 token，报 `unexpected status from HEAD request ... 401 Unauthorized`。
 > 因此默认不走该源；如需走飞牛源，请在飞牛 Docker 设置里先配置可用的加速器。
+
+## 构建注意：不要用 `--ignore-scripts`
+
+`npm ci --ignore-scripts` 会让 `@swc/core`、`esbuild` 这类带安装脚本的包跳过脚本执行，
+平台二进制（`@swc/core-linux-x64-gnu` 等）装不上，构建时会直接报：
+
+```
+Error Failed to load "@swc/cli" and/or "@swc/core" required packages
+Failed to load native binding
+```
+
+Dockerfile 里已经避开了这个坑：正常执行 `npm ci`，另外单独删除项目自带的
+`postinstall`（它调用生成器的 `fullstack-cli`，容器里没有），
+并把前后端构建拆成两条 `RUN`，失败时能直接看出是哪一步挂的。
